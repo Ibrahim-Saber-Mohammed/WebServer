@@ -79,10 +79,70 @@ namespace Uri {
 		* @retval ""
 		*	This is returned if there is no "authority" element of the URI
 		*/
-		std::string Uri::GetAuthority(void) const;
-
+		std::string GetAuthority(void) const;
+		/**
+		 * This Method returns an Indication whether or not the URI 
+		 * has a port element inside.
+		 * 
+		 * @return 
+		 * 		An Indication whether or not the URI has a port inside.
+		 */
 		bool HasPort(void) const;
+		/**
+		* This Methods returns the "port" element of the URI
+		*
+		* @return
+		*		A sring represents the "port" element of the URI if any.
+		* @note 
+		*	This is returned if there is no "port" element of the URI
+		*/
 		uint16_t GetPort(void) const;
+		/**
+		* This Methods returns the "Fragment" element of the URI
+		*
+		* @return
+		*		A sring represents the "Fragment" element of the URI
+		* @retval ""
+		*	This is returned if there is no "Fragment" element of the URI
+		*/
+		std::string GetFragment(void) const;
+		/**
+		* This Methods returns the "Query" element of the URI
+		*
+		* @return
+		*		A sring represents the "Query" element of the URI
+		* @retval ""
+		*	This is returned if there is no "Query" element of the URI
+		*/
+		std::string GetQuery(void) const;
+		/**
+		* This Methods returns the "UserInfo" element of the URI
+		*
+		* @return
+		*		A sring represents the "UserInfo" element of the URI
+		* @retval ""
+		*	This is returned if there is no "UserInfo" element of the URI
+		*/
+		std::string GetUserInfo(void) const;
+		/**
+		 * This Method returns an Indication whether or not the URI 
+		 * is relative reference by checking if there is no scheme element then this is
+		 * a relative reference.
+		 * 
+		 * @return 
+		 * 		An Indication whether or not the URI is a relative reference.
+		 */
+		bool IsRelativeReference(void) const;
+        /**
+		 * This Method returns an Indication whether or not the URI 
+		 * contains a relative path by checking if path element starts with "/" 
+         * then this is not a relative path.
+		 * 
+		 * @return 
+		 * 		An Indication whether or not the URI contains a relative path.
+		 */
+		bool ContainsRelativePath(void) const;
+        
 		/** Private Proberties */
 	private:
 

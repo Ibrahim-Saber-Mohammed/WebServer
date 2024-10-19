@@ -32,6 +32,7 @@ set(Sources
 	${CMAKE_SOURCE_DIR}/src/Uri.cpp
 )
 
+
 add_library(${PROJECT_NAME} STATIC ${Sources} ${Headers})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     FOLDER Libraries
@@ -39,3 +40,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 
+add_subdirectory(test)

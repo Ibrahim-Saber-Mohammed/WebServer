@@ -1,0 +1,7 @@
+/home/ibrahim/Desktop/WebServer/build/CMakeFiles/WebServer.dir
+/home/ibrahim/Desktop/WebServer/build/CMakeFiles/Uri.dir
+/home/ibrahim/Desktop/WebServer/build/CMakeFiles/edit_cache.dir
+/home/ibrahim/Desktop/WebServer/build/CMakeFiles/rebuild_cache.dir
+/home/ibrahim/Desktop/WebServer/build/test/CMakeFiles/UriTest.dir
+/home/ibrahim/Desktop/WebServer/build/test/CMakeFiles/edit_cache.dir
+/home/ibrahim/Desktop/WebServer/build/test/CMakeFiles/rebuild_cache.dir

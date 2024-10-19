@@ -1,0 +1,5 @@
+if(EXISTS "/home/ibrahim/Desktop/WebServer/build/test/UriTests[1]_tests.cmake")
+  include("/home/ibrahim/Desktop/WebServer/build/test/UriTests[1]_tests.cmake")
+else()
+  add_test(UriTests_NOT_BUILT UriTests_NOT_BUILT)
+endif()
