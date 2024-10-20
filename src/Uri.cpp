@@ -2,6 +2,33 @@
 #include <iostream>
 namespace Uri
 {
+	namespace
+	{
+		bool ConvertStringToUint16Number(const std::string &StringNumber, uint16_t &Number)
+		{
+			uint32_t l_tmpPortNumber{};
+			for (auto chr : StringNumber)
+			{
+				// Detecting Characters and negative numbers
+				if ((chr < '0') || (chr > '9'))
+				{
+					return false;
+				}
+				else
+				{
+					l_tmpPortNumber *= 10;
+					l_tmpPortNumber += static_cast<uint16_t>((chr - '0'));
+					// Detecting overflow
+					if ((l_tmpPortNumber & ~((1 << 16) - 1)) != 0)
+					{
+						return false;
+					}
+				}
+			}
+			Number = static_cast<uint16_t>(l_tmpPortNumber);
+			return true;
+		}
+	}
 	struct Uri::Impl
 	{
 		/**
@@ -51,6 +78,83 @@ namespace Uri
 		{
 
 		}*/
+		
+		bool ParseUriSchemeElement(const std::string &Copy_strUriString, std::string &UriRemainningStringElements)
+		{
+			const auto l_SchemeEnd = Copy_strUriString.find(':');
+			if (l_SchemeEnd == std::string::npos)
+			{
+				scheme_.clear();
+				UriRemainningStringElements = Copy_strUriString;
+			}
+			else
+			{
+				scheme_ = Copy_strUriString.substr(0, l_SchemeEnd);
+				UriRemainningStringElements = Copy_strUriString.substr(l_SchemeEnd + 1);
+			}
+			return true;
+		}
+		bool ParseUriFragmentElement(const std::string &Copy_strUriString, std::string &UriRemainningStringElements)
+		{
+			auto l_FragmentDelimiter = Copy_strUriString.find('#');
+			if (l_FragmentDelimiter == std::string::npos)
+			{
+				fragment_.clear();
+				l_FragmentDelimiter = Copy_strUriString.length();
+			}
+			else
+			{
+				fragment_ = Copy_strUriString.substr(l_FragmentDelimiter + 1);
+			}
+			UriRemainningStringElements = Copy_strUriString.substr(0, l_FragmentDelimiter);
+			return true;
+		}
+		bool ParseUriQueryElement(const std::string &Copy_strUriString, std::string &UriRemainningStringElements){
+			auto l_QueryDelimiter = Copy_strUriString.find('?');
+			if (l_QueryDelimiter == std::string::npos)
+			{
+				query_.clear();
+				l_QueryDelimiter = Copy_strUriString.length();
+			}
+			else
+			{
+				query_ = Copy_strUriString.substr(l_QueryDelimiter + 1, Copy_strUriString.length());
+			}
+
+			UriRemainningStringElements = Copy_strUriString.substr(0, l_QueryDelimiter);
+			return true;
+		}
+		bool ParseUriPathElement(std::string &Copy_strPathString)
+		{
+			path_.clear();
+			if (Copy_strPathString == "/")
+			{
+				/**
+				 * Special case of a path that is empty but needs a single
+				 * empty string element to indicate that it is absolute.
+				 */
+				path_.push_back("");
+			}
+			else if (!Copy_strPathString.empty())
+			{
+				for (;;)
+				{
+					const auto l_PathSegmant = Copy_strPathString.find('/');
+					if (l_PathSegmant == std::string::npos)
+					{
+						path_.push_back(Copy_strPathString);
+						break;
+					}
+					else
+					{
+						path_.emplace_back(
+							Copy_strPathString.begin(), Copy_strPathString.begin() + l_PathSegmant);
+						Copy_strPathString = Copy_strPathString.substr(l_PathSegmant + 1);
+					}
+				}
+			}
+			return true;
+		}
 	};
 
 	Uri::Uri() : impl_(new Impl) {}
@@ -59,128 +163,84 @@ namespace Uri
 	bool Uri::ParseFromString(const std::string &UriString)
 	{
 		// TODO: Refactor this method
-		std::string rest{};
+		std::string UriStringWithoutScheme{};
+		std::string l_UriPathString{};
+		std::string l_UriAuthourityPathQuery{};
 		const auto l_SchemeEnd = UriString.find(':');
-		if (l_SchemeEnd == std::string::npos)
+
+		if (!impl_->ParseUriSchemeElement(UriString, UriStringWithoutScheme))
 		{
-			impl_->scheme_.clear();
-			rest = UriString;
-		}
-		else
-		{
-			impl_->scheme_ = UriString.substr(0, l_SchemeEnd);
-			rest = UriString.substr(l_SchemeEnd + 1);
+			return false;
 		}
 		// Parsing the Authority, host and port
-		
-		if (rest.substr(0, 2) == "//")
+		impl_->hasPort_ = false;
+		if (UriStringWithoutScheme.substr(0, 2) == "//")
 		{
 			// paring the Fragment
-			auto l_FragmentDelimiter = rest.find('#', 2);
-			if(l_FragmentDelimiter == std::string::npos)
+			if(!impl_->ParseUriFragmentElement(UriStringWithoutScheme, l_UriAuthourityPathQuery))
 			{
-				impl_->fragment_.clear();
-				l_FragmentDelimiter = rest.length();
+				return false;
 			}
-			else{
-				impl_->fragment_ = rest.substr(l_FragmentDelimiter + 1);
-			}
-			rest = rest.substr(0, l_FragmentDelimiter);
-			// paring the Query
-			auto l_QueryDelimiter = rest.find('?', 2);
-			if(l_QueryDelimiter == std::string::npos)
+			if(!impl_->ParseUriQueryElement(l_UriAuthourityPathQuery, l_UriAuthourityPathQuery))
 			{
-				impl_->query_.clear();
-				l_QueryDelimiter = rest.length();
+				return false;
 			}
-			else{
-				impl_->query_ = rest.substr(l_QueryDelimiter + 1, rest.length());
-			}
+			UriStringWithoutScheme = l_UriAuthourityPathQuery;
 
-			rest = rest.substr(0, l_QueryDelimiter);
-			
-			impl_->port_ = 0;
-			impl_->hasPort_ = false;
-			auto l_userInfoDelimiter = rest.find('@');
+			auto l_userInfoDelimiter = UriStringWithoutScheme.find('@');
 			if (l_userInfoDelimiter == std::string::npos)
 			{
-				l_userInfoDelimiter = rest.length();
+				l_userInfoDelimiter = UriStringWithoutScheme.length();
 				impl_->userInfo_.clear();
-			}else{
-				impl_->userInfo_ = rest.substr(2, l_userInfoDelimiter-2);
-				rest.erase(2,l_userInfoDelimiter - 1);
 			}
+			else
+			{
+				impl_->userInfo_ = UriStringWithoutScheme.substr(2, l_userInfoDelimiter - 2);
+				UriStringWithoutScheme.erase(2, l_userInfoDelimiter - 1);
+			}
+
 			// Parsing the authority host and port number
-			auto l_AuthorityEnd = rest.find('/', 2);
+			auto l_AuthorityEnd = UriStringWithoutScheme.find('/', 2);
 			// URI = "https://www.google.com"
 			if (l_AuthorityEnd == std::string::npos)
 			{
-				l_AuthorityEnd = rest.length();
+				l_AuthorityEnd = UriStringWithoutScheme.length();
 			}
 			// URI = "https://www.google.com/online"
-			impl_->authority_ = rest.substr(2, l_AuthorityEnd - 2);
-						// Check for the userInfo in the URI			
-			
+			impl_->authority_ = UriStringWithoutScheme.substr(2, l_AuthorityEnd - 2);
+			// Check for the userInfo in the URI
+
 			// URI = "https://www.google.com:80/online"
-			const auto l_hostPortDelimiter = rest.find(':');
-			if(l_hostPortDelimiter == std::string::npos)
+			const auto l_hostPortDelimiter = UriStringWithoutScheme.find(':');
+			if (l_hostPortDelimiter == std::string::npos)
 			{
-				impl_->host_ = rest.substr(2, l_AuthorityEnd - 2);
+				impl_->host_ = UriStringWithoutScheme.substr(2, l_AuthorityEnd - 2);
 			}
-			else{
-				impl_->host_ = rest.substr(2, l_hostPortDelimiter - 2);
-				uint32_t l_tmpPortNumber{};
-				for(auto chr : rest.substr(l_hostPortDelimiter + 1, l_AuthorityEnd - l_hostPortDelimiter - 1))
+			else
+			{
+				impl_->host_ = UriStringWithoutScheme.substr(2, l_hostPortDelimiter - 2);
+				const auto authourity = UriStringWithoutScheme.substr(l_hostPortDelimiter + 1, l_AuthorityEnd - l_hostPortDelimiter - 1);
+				if (!ConvertStringToUint16Number(authourity, impl_->port_))
 				{
-					if( (chr < '0')
-						||(chr > '9'))
-						{
-							return false;
-						}
-						else{
-							l_tmpPortNumber *=10;
-							l_tmpPortNumber += static_cast<uint16_t>((chr - '0'));
-							// Detecting overflow
-							if((l_tmpPortNumber & ~((1 << 16)-1)) != 0 )
-							{
-								return false;
-							}
-						}
+					return false;
 				}
-				impl_->port_ = l_tmpPortNumber;
 				impl_->hasPort_ = true;
 			}
-			rest = rest.substr(l_AuthorityEnd);
+			UriStringWithoutScheme = UriStringWithoutScheme.substr(l_AuthorityEnd);
 		}
-			// Parsing the path
-			impl_->path_.clear();
-			if(rest == "/")
-			{
-				/**
-					* Special case of a path that is empty but needs a single
-					* empty string element to indicate that it is absolute.
-				*/
-				impl_->path_.push_back("");
-			}
-			else if(!rest.empty()){
-				for(;;)
-				{
-					const auto l_PathSegmant = rest.find('/');
-					if(l_PathSegmant == std::string::npos)
-					{
-						impl_->path_.push_back(rest);
-						break;
-					}
-					else{
-						impl_->path_.emplace_back(
-							rest.begin(), rest.begin() + l_PathSegmant
-						);
-						rest = rest.substr(l_PathSegmant+1);
-					}
-				}
-			}
-			// impl_->path_ = {rest};
-		
+		else{
+			impl_->port_ = 0;
+			impl_->hasPort_ = false;
+		}
+
+		l_UriPathString = UriStringWithoutScheme;
+		// Parsing the path
+		if (!impl_->ParseUriPathElement(l_UriPathString))
+		{
+			return false;
+		}
+		// impl_->path_ = {rest};
+
 		return true;
 	}
 

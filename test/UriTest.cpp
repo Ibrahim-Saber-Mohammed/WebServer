@@ -228,3 +228,84 @@ TEST(UriTests, ParseFromStringUserInfo) {
         ++index;
     }
 }
+
+TEST(UriTests, ParseFromStringSchemeWithIllegalChars) {
+   Uri::Uri uri;
+    const std::vector< std::string > testVectors{
+        {"://www.example.com/"},
+        {"0://www.example.com/"},
+        {"+://www.example.com/"},
+        {"@://www.example.com/"},
+        {".://www.example.com/"},
+        {"+://www.example.com/"},
+        {"h?://www.example.com/"},
+        {"h#://www.example.com/"},
+        {"h@://www.example.com/"},
+    };
+    size_t index = 0;
+    for(const auto& testVector:testVectors)
+    {
+        ASSERT_FALSE(uri.ParseFromString(testVector)) << index;
+        index++;
+    }
+
+}
+TEST(UriTests, ParseFromStringSchemeBarelyLegal) {
+    Uri::Uri uri;
+    struct TestVector{
+        std::string uriString;
+        std::string scheme;
+    };
+    const std::vector< TestVector > testVectors{
+        {{"h://www.example.com/"}, "h"},
+        {{"h+://www.example.com/"}, "h+"},
+        {{"h7://www.example.com/"}, "h7"},
+        {{"y-://www.example.com/"}, "y-"},
+        {{"aa://www.example.com/"}, "aa"},
+        {{"z.://www.example.com/"}, "z."},
+        {{"a0://www.example.com/"}, "a0"},
+    };
+     size_t index = 0;
+    for(const auto& testVector:testVectors)
+    {
+        ASSERT_TRUE(uri.ParseFromString(testVector.uriString)) << index;
+        ASSERT_EQ(uri.GetScheme(), testVector.scheme);
+        index++;
+    }
+
+}
+TEST(UriTests, ParseFromStringUserInfoIllegalCharacters) {
+    const std::vector< std::string > testVectors{
+        {"//%X@www.example.com/"},
+        {"//{@www.example.com/"},
+    };
+    size_t index = 0;
+    for (const auto& testVector : testVectors) {
+        Uri::Uri uri;
+        ASSERT_FALSE(uri.ParseFromString(testVector)) << index;
+        ++index;
+    }
+}
+
+TEST(UriTests, ParseFromStringUserInfoBarelyLegal) {
+    struct TestVector {
+        std::string uriString;
+        std::string userInfo;
+    };
+    const std::vector< TestVector > testVectors{
+        {"//%41@www.example.com/", "A"},
+        {"//@www.example.com/", ""},
+        {"//!@www.example.com/", "!"},
+        {"//'@www.example.com/", "'"},
+        {"//(@www.example.com/", "("},
+        {"//;@www.example.com/", ";"},
+        {"http://:@www.example.com/", ":"},
+    };
+    size_t index = 0;
+    for (const auto& testVector : testVectors) {
+        Uri::Uri uri;
+        ASSERT_TRUE(uri.ParseFromString(testVector.uriString)) << index;
+        ASSERT_EQ(testVector.userInfo, uri.GetUserInfo());
+        ++index;
+    }
+}
