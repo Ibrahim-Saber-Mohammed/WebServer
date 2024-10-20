@@ -28,6 +28,11 @@ namespace Uri
 			Number = static_cast<uint16_t>(l_tmpPortNumber);
 			return true;
 		}
+		template<typename T>
+		bool ExcuteValidationStartegy(std::string& CopyString, T Startegy)
+		{
+
+		}
 	}
 	struct Uri::Impl
 	{
@@ -68,17 +73,7 @@ namespace Uri
 		/**
 		 * This is the "userInfo" element of the URI
 		 */
-		std::string userInfo_;
-
-		/*bool UriHasPort()
-		{
-
-		}
-		bool ParsePortNumber(std::string& input)
-		{
-
-		}*/
-		
+		std::string userInfo_;		
 		bool ParseUriSchemeElement(const std::string &Copy_strUriString, std::string &UriRemainningStringElements)
 		{
 			const auto l_SchemeEnd = Copy_strUriString.find(':');
@@ -155,6 +150,68 @@ namespace Uri
 			}
 			return true;
 		}
+		bool ParseUriUserInfoElement(const std::string& Copy_strUriString, std::string& UriRemainningStringElements) {
+			UriRemainningStringElements = Copy_strUriString;
+			auto l_userInfoDelimiter = Copy_strUriString.find('@');
+			if (l_userInfoDelimiter == std::string::npos)
+			{
+				l_userInfoDelimiter = Copy_strUriString.length();
+				userInfo_.clear();
+			}
+			else
+			{
+				userInfo_ = Copy_strUriString.substr(2, l_userInfoDelimiter - 2);
+				UriRemainningStringElements.erase(2, l_userInfoDelimiter - 1);
+			}
+			return true;
+		}
+		bool ParsingHostAndPort(std::string& Copy_strUriString, size_t Copy_AuthorityEndIndex)
+		{
+			// URI = "https://www.google.com:80/online"
+			const auto l_hostPortDelimiter = Copy_strUriString.find(':');
+			if (l_hostPortDelimiter == std::string::npos)
+			{
+				host_ = Copy_strUriString.substr(2, Copy_AuthorityEndIndex - 2);
+			}
+			else
+			{
+				host_ = Copy_strUriString.substr(2, l_hostPortDelimiter - 2);
+				const auto authourity = Copy_strUriString.substr(l_hostPortDelimiter + 1, Copy_AuthorityEndIndex - l_hostPortDelimiter - 1);
+				if (!ConvertStringToUint16Number(authourity, port_))
+				{
+					return false;
+				}
+				hasPort_ = true;
+			}
+			return true;
+		}
+		bool ParesUriAuthorityElements(const std::string& Copy_strUriString, std::string& UriRemainningStringElements)
+		{
+			UriRemainningStringElements = Copy_strUriString;
+			auto l_AuthorityEnd = UriRemainningStringElements.find('/', 2);
+			// URI = "https://www.google.com"
+			if (l_AuthorityEnd == std::string::npos)
+			{
+				l_AuthorityEnd = UriRemainningStringElements.length();
+			}
+			// URI = "https://www.google.com/online"
+			authority_ = UriRemainningStringElements.substr(2, l_AuthorityEnd - 2);
+
+			if (!ParseUriUserInfoElement(UriRemainningStringElements, UriRemainningStringElements))
+			{
+				return false;
+			}
+			if (!ParsingHostAndPort(UriRemainningStringElements, l_AuthorityEnd))
+			{
+				return false;
+			}
+			UriRemainningStringElements = UriRemainningStringElements.substr(l_AuthorityEnd);
+			return true;
+		}
+		bool SchemeValidation(char chr)
+		{
+
+		}
 	};
 
 	Uri::Uri() : impl_(new Impl) {}
@@ -165,15 +222,15 @@ namespace Uri
 		// TODO: Refactor this method
 		std::string UriStringWithoutScheme{};
 		std::string l_UriPathString{};
+		std::string l_UriAuthourityPath{};
 		std::string l_UriAuthourityPathQuery{};
-		const auto l_SchemeEnd = UriString.find(':');
-
+		// Parsing the Authority, host and port
+		impl_->hasPort_ = false;
+		
 		if (!impl_->ParseUriSchemeElement(UriString, UriStringWithoutScheme))
 		{
 			return false;
 		}
-		// Parsing the Authority, host and port
-		impl_->hasPort_ = false;
 		if (UriStringWithoutScheme.substr(0, 2) == "//")
 		{
 			// paring the Fragment
@@ -181,52 +238,17 @@ namespace Uri
 			{
 				return false;
 			}
-			if(!impl_->ParseUriQueryElement(l_UriAuthourityPathQuery, l_UriAuthourityPathQuery))
+			// paring the Query
+			if(!impl_->ParseUriQueryElement(l_UriAuthourityPathQuery, l_UriAuthourityPath))
 			{
 				return false;
 			}
-			UriStringWithoutScheme = l_UriAuthourityPathQuery;
+			// Parsing Authority
 
-			auto l_userInfoDelimiter = UriStringWithoutScheme.find('@');
-			if (l_userInfoDelimiter == std::string::npos)
+			if (!impl_->ParesUriAuthorityElements(l_UriAuthourityPath, l_UriPathString))
 			{
-				l_userInfoDelimiter = UriStringWithoutScheme.length();
-				impl_->userInfo_.clear();
-			}
-			else
-			{
-				impl_->userInfo_ = UriStringWithoutScheme.substr(2, l_userInfoDelimiter - 2);
-				UriStringWithoutScheme.erase(2, l_userInfoDelimiter - 1);
-			}
-
-			// Parsing the authority host and port number
-			auto l_AuthorityEnd = UriStringWithoutScheme.find('/', 2);
-			// URI = "https://www.google.com"
-			if (l_AuthorityEnd == std::string::npos)
-			{
-				l_AuthorityEnd = UriStringWithoutScheme.length();
-			}
-			// URI = "https://www.google.com/online"
-			impl_->authority_ = UriStringWithoutScheme.substr(2, l_AuthorityEnd - 2);
-			// Check for the userInfo in the URI
-
-			// URI = "https://www.google.com:80/online"
-			const auto l_hostPortDelimiter = UriStringWithoutScheme.find(':');
-			if (l_hostPortDelimiter == std::string::npos)
-			{
-				impl_->host_ = UriStringWithoutScheme.substr(2, l_AuthorityEnd - 2);
-			}
-			else
-			{
-				impl_->host_ = UriStringWithoutScheme.substr(2, l_hostPortDelimiter - 2);
-				const auto authourity = UriStringWithoutScheme.substr(l_hostPortDelimiter + 1, l_AuthorityEnd - l_hostPortDelimiter - 1);
-				if (!ConvertStringToUint16Number(authourity, impl_->port_))
-				{
-					return false;
-				}
-				impl_->hasPort_ = true;
-			}
-			UriStringWithoutScheme = UriStringWithoutScheme.substr(l_AuthorityEnd);
+				return false;
+			}			
 		}
 		else{
 			impl_->port_ = 0;
@@ -239,8 +261,6 @@ namespace Uri
 		{
 			return false;
 		}
-		// impl_->path_ = {rest};
-
 		return true;
 	}
 
