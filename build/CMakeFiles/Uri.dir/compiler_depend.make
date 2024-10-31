@@ -210,8 +210,35 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
   /usr/include/c++/11/bits/basic_ios.tcc \
   /usr/include/c++/11/bits/ostream.tcc \
   /usr/include/c++/11/istream \
-  /usr/include/c++/11/bits/istream.tcc
+  /usr/include/c++/11/bits/istream.tcc \
+  /usr/include/c++/11/functional \
+  /usr/include/c++/11/bits/std_function.h \
+  /usr/include/c++/11/unordered_map \
+  /usr/include/c++/11/bits/hashtable.h \
+  /usr/include/c++/11/bits/hashtable_policy.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/unordered_map.h \
+  /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h
 
+
+/usr/include/c++/11/bits/stl_heap.h:
+
+/usr/include/c++/11/bits/algorithmfwd.h:
+
+/usr/include/c++/11/bits/stl_algo.h:
+
+/usr/include/c++/11/bits/erase_if.h:
+
+/usr/include/c++/11/bits/enable_special_members.h:
+
+/usr/include/c++/11/bits/hashtable_policy.h:
+
+/usr/include/c++/11/bits/hashtable.h:
 
 /usr/include/c++/11/bits/istream.tcc:
 
@@ -281,6 +308,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 
 /usr/include/ctype.h:
 
+/usr/include/c++/11/unordered_map:
+
 /usr/include/c++/11/cctype:
 
 /usr/include/x86_64-linux-gnu/bits/locale.h:
@@ -294,6 +323,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 /usr/include/c++/11/bits/localefwd.h:
 
 /usr/include/c++/11/cstdint:
+
+/usr/include/c++/11/functional:
 
 /usr/include/asm-generic/errno-base.h:
 
@@ -368,6 +399,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 /usr/include/c++/11/bits/functional_hash.h:
 
 /usr/include/c++/11/bits/alloc_traits.h:
+
+/usr/include/c++/11/bits/std_function.h:
 
 /usr/include/x86_64-linux-gnu/sys/single_threaded.h:
 
@@ -531,6 +564,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 
 /usr/include/c++/11/cwchar:
 
+/usr/include/c++/11/bits/uniform_int_dist.h:
+
 /usr/include/c++/11/bits/cxxabi_init_exception.h:
 
 /usr/include/wchar.h:
@@ -552,6 +587,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 /usr/include/x86_64-linux-gnu/bits/types/wint_t.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
+
+/usr/include/c++/11/bits/node_handle.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
@@ -604,6 +641,8 @@ CMakeFiles/Uri.dir/src/Uri.cpp.o: ../src/Uri.cpp \
 /usr/include/x86_64-linux-gnu/bits/endian.h:
 
 /usr/include/x86_64-linux-gnu/bits/sched.h:
+
+/usr/include/c++/11/bits/unordered_map.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h:
 
